@@ -14,6 +14,6 @@ def base16ToBase64(string):
 if __name__ == '__main__':
     if len(argv[1:]) == 1:
         base64 = base16ToBase64(argv[1])
-        print(base64)
+        print(base64.decode().strip())
     else:
-        print("Usage: prog [hex_string]\nOutput: Base64 encoded string")
+        print("Usage: ",argv[0]," [hex_string]\nOutput: Base64 encoded string")

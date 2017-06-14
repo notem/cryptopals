@@ -24,8 +24,8 @@ if __name__ == '__main__':
         len2 = len(argv[2])
         if len1 == len2:
             hex_str = xor(argv[1], argv[2])
-            print(hex_str)
+            print(hex_str.decode())
         else:
             print("Error: hex strings must of same length!")
     else:
-        print("Usage: prog [hex_string1] [hex_string2]\nOutput: Base64 encoded string")
+        print("Usage: ", argv[0], " [hex_string1] [hex_string2]\nOutput: result of xor of provided strings, base16 encoded")

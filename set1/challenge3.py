@@ -23,4 +23,4 @@ if __name__ == '__main__':
             hex_str = xor(argv[1], i)
             print(hex_str, "\t|\tbyte:", i)
     else:
-        print("Usage: prog [hex_string]\nOutput: list of all results of xor'ing the hex encoded string with a single repeating byte")
+        print("Usage: ",argv[0]," [hex_string]\nOutput: list of all results of xor'ing the hex encoded string with a single repeating byte")
