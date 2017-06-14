@@ -6,6 +6,8 @@
 import sys
 from sys import argv
 import binascii
+import collections
+import string
 
 
 def xor(string, byte):
@@ -13,14 +15,25 @@ def xor(string, byte):
     for i in range(len(binary)):
         binary[i] ^= byte
     try:
-        return binary.decode()
+        return binary.decode('utf-8','surrogatepass')
     except UnicodeDecodeError:
-        return "Error"
+        return ""
+
+def test(hex_string):
+    for i in range(0,255):
+       s = xor(hex_string, i)
+       valid = True
+       if s == "":
+           valid = False
+       validchars = set(string.printable)
+       if not set(s).issubset(validchars):
+           valid = False
+       if valid:
+           print(s, "\t|\tbyte:", i)
+    return
 
 if __name__ == '__main__':
     if len(argv[1:]) == 1:
-        for i in range(0,255):
-            hex_str = xor(argv[1], i)
-            print(hex_str, "\t|\tbyte:", i)
+        test(argv[1])
     else:
-        print("Usage: ",argv[0]," [hex_string]\nOutput: list of all results of xor'ing the hex encoded string with a single repeating byte")
+        print("Usage: ",argv[0]," [hex_string]\nOutput: list of reasonable results from xor'ing the hex encoded string with a single repeating byte")
