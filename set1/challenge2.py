@@ -12,9 +12,11 @@ def xor(string1, string2):
     # convert to byte arrays
     binary1 = bytearray(binascii.unhexlify(string1))
     binary2 = bytearray(binascii.unhexlify(string2))
+
     # xor each byte
     for i in range(len(binary1)):
         binary1[i] ^= binary2[i]
+
     # convert back to a hex string
     return binascii.hexlify(binary1)
 
