@@ -3,7 +3,6 @@
 # author: Nate Mathews, njm3308@rit.edu
 # date: 2017-06-14
 
-import sys
 from sys import argv
 import binascii
 
@@ -20,6 +19,7 @@ def xor(string1, string2):
     # convert back to a hex string
     return binascii.hexlify(binary1)
 
+
 if __name__ == '__main__':
     if len(argv[1:]) == 2:
         len1 = len(argv[1])
@@ -28,6 +28,7 @@ if __name__ == '__main__':
             hex_str = xor(argv[1], argv[2])
             print(hex_str.decode())
         else:
-            print("Error: hex strings must of same length!")
+            print("Error: hex strings must be of same length!")
     else:
-        print("Usage: ", argv[0], " [hex_string1] [hex_string2]\nOutput: result of xor of provided strings, base16 encoded")
+        print(
+        "Usage: ", argv[0], " [hex_string1] [hex_string2]\nOutput: result of xor of provided strings, base16 encoded")

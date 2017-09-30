@@ -4,11 +4,9 @@
 # date: 2017-06-14
 
 import sys
-from sys import argv
 import binascii
-import collections
-import string
 import copy
+
 
 # encode binary data by xor'ing a key repeating through the length of the data
 def xor_encode(binary, key_binary):
@@ -23,11 +21,12 @@ def xor_encode(binary, key_binary):
 
     return binary_clone
 
+
 if __name__ == '__main__':
     text = "Burning 'em, if you ain't quick and nimble\nI go crazy when I hear a cymbal"
     key = "ICE"
 
-    system_encoding=sys.getdefaultencoding()
+    system_encoding = sys.getdefaultencoding()
     binary = bytearray(text, encoding=system_encoding)
     key_binary = bytearray(key, encoding=system_encoding)
 

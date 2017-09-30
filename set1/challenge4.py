@@ -3,18 +3,16 @@
 # author: Nate Mathews, njm3308@rit.edu
 # date: 2017-06-28
 
-import sys
 from sys import argv
 import binascii
-import collections
-import string
-import challenge3
+
+challenge3 = __import__("challenge3")
 
 
 if __name__ == '__main__':
     if len(argv[1:]) == 1:
-        file_obj = open(argv[1],"r")
-        line_no = 1;
+        file_obj = open(argv[1], "r")
+        line_no = 1
 
         valid_results = {}
         for string in file_obj:
@@ -38,4 +36,6 @@ if __name__ == '__main__':
         print("Byte:   ", valid_results[best_line][0])
         print("Results:", valid_results[best_line][1])
     else:
-        print("Usage: ", argv[0], " [hex_string]\nOutput: for lines in the file, outputs the best decryptions of the string using a one byte xor key")
+        print("Usage: ", argv[0],
+              "[hex_string]\nOutput: for lines in the file, outputs the best decryptions of the string using a one ",
+              "byte xor key")

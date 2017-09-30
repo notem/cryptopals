@@ -7,13 +7,14 @@ from sys import argv
 import binascii
 
 
-def base16ToBase64(string):
+def hex_to_base64(string):
     binary = binascii.unhexlify(string)
     return binascii.b2a_base64(binary)
 
+
 if __name__ == '__main__':
     if len(argv[1:]) == 1:
-        base64 = base16ToBase64(argv[1])
+        base64 = hex_to_base64(argv[1])
         print(base64.decode().strip())
     else:
-        print("Usage: ",argv[0]," [hex_string]\nOutput: Base64 encoded string")
+        print("Usage: ", argv[0], " [hex_string]\nOutput: Base64 encoded string")
