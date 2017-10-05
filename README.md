@@ -6,7 +6,7 @@ Kudos to the team which developed these challenge sets!
 ### Set Completion Log
 
 * Set 1: Completed 2017-09-30, written in python 3.6
-* Set 2: Uncompleted
+* Set 2: In Progress, written in Go 1.6
 * Set 3: Uncompleted
 * Set 4: Uncompleted
 * Set 5: Uncompleted
