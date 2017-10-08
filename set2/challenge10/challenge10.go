@@ -3,7 +3,7 @@ Solution to cryptopals challenge 10
 http://cryptopals.com/sets/2/challenges/10
 
 author: Nate Mathews, njm3308@rit.edu
-date: 2017-10-07
+date: 2017-10-08
 */
 package main
 
@@ -12,7 +12,6 @@ import (
 	"os"
 	"fmt"
 	"crypto/aes"
-	"bytes"
 	"io"
 	"bufio"
 )
@@ -21,10 +20,12 @@ import (
 func main() {
 
 	// program usage
-	const USAGE = "This program will PadBuffer a string using the PKCS#7 scheme.\n\n" +
+	const USAGE = "This program can encrypt and decrypt a file in AES CBC mode.\n\n" +
 		"USAGE: ./challenge10 [mode] [key] [infile] [outfile]" +
-		"\n\t[block_size]      - the size of each block in bytes" +
-		"\n\t[unpadded_string] - the string to PadBuffer to block_size"
+		"\n\t[mode]     - 'encrypt' or 'decrypt'" +
+		"\n\t[key]      - key stream to use" +
+		"\n\t[infile]   - input file" +
+		"\n\t[outfile]  - output file"
 
 	// check argument count, if fail print USAGE
 	args := os.Args[1:]
@@ -48,7 +49,7 @@ func main() {
 	key := []byte(args[1])
 	aesCipher, err := aes.NewCipher(key)
 	if err != nil {
-		fmt.Println("Could not create cipher:", err)
+		fmt.Println("Could not create AES cipher:", err)
 		return
 	}
 
@@ -58,6 +59,7 @@ func main() {
 		fmt.Println("Could not open input file:", err)
 		return
 	}
+	defer inFile.Close()
 	reader := bufio.NewReader(inFile)
 
 	// create [outfile]
@@ -66,37 +68,49 @@ func main() {
 		fmt.Println("Could not create output file:", err)
 		return
 	}
+	defer outFile.Close()
 	writer := bufio.NewWriter(outFile)
 
 	// do operations
 	IV := make([]byte, aesCipher.BlockSize()) // IV
 	switch mode {
-		case 0: // encrypt mode
+		case 0: // CBC encrypt mode
+			inBlock := make([]byte, aesCipher.BlockSize())		  // plain text read from file
+			outBlock := IV										  // output of AES encrypt
+			paddedBlock := make([]byte, aesCipher.BlockSize()*2)  // block used for padding when pad is full block size
+
+			// process plaintext file
 			done := false
-			inBlock := make([]byte, aesCipher.BlockSize())
-			outBlock := IV
 			for !done {
+
 				// read a block of bytes
-				_, err := reader.Read(inBlock)
+				count, err := reader.Read(inBlock)
 				if err == io.EOF {
-					// pad the block if EOF
-					inBlock = utils.Pad(aesCipher.BlockSize(), bytes.NewBuffer(inBlock)).Bytes()
+					inBlock = utils.Pad(aesCipher.BlockSize(), inBlock[0:count])
+					copy(paddedBlock, inBlock)
 					done = true
 				} else if err != nil {
 					panic(err)
 				}
 
-				// E(pt ^ IV) = ct
+				// if full count was not read, assume EOF
+				if count < aesCipher.BlockSize() {
+					inBlock = utils.Pad(aesCipher.BlockSize(), inBlock[0:count])
+					copy(paddedBlock, inBlock)
+					done = true
+				}
+
+				// E(pt ^ ct-1) = ct
 				inBlock = utils.Xor(inBlock[:16], outBlock)
-				aesCipher.Encrypt(outBlock, inBlock[:16])
+				aesCipher.Encrypt(outBlock, inBlock)
 				if _, err := writer.Write(outBlock); err != nil {
 					panic(err)
 				}
 
-				// if padding was full block
-				if done && len(inBlock) > aesCipher.BlockSize() {
-					inBlock = utils.Xor(inBlock[:16], outBlock)
-					aesCipher.Encrypt(outBlock, inBlock[:16])
+				// if padding was full block, encrypt the final pad block and write to file
+				if done && len(paddedBlock) > aesCipher.BlockSize() {
+					inBlock = utils.Xor(paddedBlock[16:], outBlock)
+					aesCipher.Encrypt(outBlock, inBlock)
 					if _, err := writer.Write(outBlock); err != nil {
 						panic(err)
 					}
@@ -105,42 +119,40 @@ func main() {
 			writer.Flush()
 			break
 
-		case 1: // decrypt mode
+		case 1: // CBC decrypt mode
+			inBlock := make([]byte, aesCipher.BlockSize())   // cipher text read from file
+			outBlock := make([]byte, aesCipher.BlockSize())  // output of decrypt (pt ^ ct-1)
+			cipherBlock := IV								 // previous cipher text block (ct-1)
+
+			// processes cipher text file
 			done := false
-			inBlock := make([]byte, aesCipher.BlockSize())
-			outBlock := make([]byte, aesCipher.BlockSize())
-			cipherBlock := IV
 			for !done {
+
 				// read a block of bytes
 				_, err := reader.Read(inBlock)
-				if err == io.EOF {
-					done = true
-				} else if err != nil {
+				if err != nil {
 					panic(err)
 				}
 
-				// D(ct) = pt ^ IV
+				// peek ahead to identify the end of file
+				_, err = reader.Peek(aesCipher.BlockSize()+1); if err == io.EOF {
+					done = true
+				}
+
+				// D(ct) = pt ^ ct-1
 				aesCipher.Decrypt(outBlock, inBlock)
 				outBlock = utils.Xor(cipherBlock, outBlock)
 				copy(cipherBlock, inBlock)
 
-				// remove padding
+				// remove padding if end of file as been found
 				if done {
-					// determine padding size
-					padSize := outBlock[len(outBlock)-1]
-					if padSize == 0 {
-						break
-					}
-					// trim off pad
-					endIndex := len(outBlock)-int(padSize)
-					outBlock = outBlock[:endIndex]
+					outBlock = utils.UnPad(outBlock)
 				}
 
 				// write out plaintext block
 				if _, err := writer.Write(outBlock); err != nil {
 					panic(err)
 				}
-
 			}
 			writer.Flush()
 			break

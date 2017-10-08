@@ -2,27 +2,41 @@ package utils
 
 import (
 	"bytes"
-	"encoding/binary"
 )
 
 // Pad pads a byte buffer using the PKCS#7 schema
-// and returns the padded buffer
-func Pad(blockSize int, stringBuffer *bytes.Buffer) *bytes.Buffer {
-
-	// find the size of the last block
-	lastBlock := stringBuffer.Len() % blockSize
+// and returns the padded byte array
+func Pad(blockSize int, bytes1 []byte) ([]byte) {
 
 	// generate the pad size
-	padUInt := uint16(blockSize - (lastBlock % blockSize))
-	pad := make([]byte, 2)
-	binary.BigEndian.PutUint16(pad, padUInt)
+	pad := byte(blockSize-(len(bytes1)%blockSize))
 
-	// grow the buffer and write the Pad until block is full
-	stringBuffer.Grow(blockSize - lastBlock)
-	for i := 0; i < blockSize-lastBlock; i++ {
-		stringBuffer.Write(pad[1:])
+	// make a byte buffer and grow it
+	byteBuffer := bytes.NewBuffer(bytes1)
+	byteBuffer.Grow(int(pad))
+
+	// write the pad to the buffer until the buffer is full
+	for i := 0; i < int(pad); i++ {
+		byteBuffer.WriteByte(pad)
 	}
 
-	return stringBuffer
+	return byteBuffer.Bytes()
 }
 
+// UnPad removes the pad from a padded byte array using the PKCS#7 schema
+// and returns the unpadded byte array
+func UnPad(bytes1 []byte) ([]byte) {
+
+	// determine byte and pad length
+	bytesLen := len(bytes1)
+	padSize := int(bytes1[bytesLen-1])
+
+	// if pad > length something is wrong
+	if padSize > bytesLen {
+		return bytes1
+	}
+
+	// trim off pad
+	bytes2 := bytes1[:bytesLen-padSize]
+	return bytes2
+}

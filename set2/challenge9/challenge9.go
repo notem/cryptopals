@@ -11,7 +11,6 @@ import (
 	"os"
 	"fmt"
 	"strconv"
-	"bytes"
 	"../utils"
 )
 // load point for the program
@@ -38,12 +37,11 @@ func main() {
 	}
 
 	// convert string argument into a byte buffer
-	stringAsBytes := bytes.NewBufferString(args[1])
-
-	stringBuffer := utils.Pad(blockSize, stringAsBytes)
+	stringAsBytes := []byte(args[1])
+	stringAsBytesPadded := utils.Pad(blockSize, stringAsBytes)
 
 	// printout padded string
-	fmt.Printf("%q\n", stringBuffer)
+	fmt.Printf("%q\n", stringAsBytesPadded)
 }
 
 
