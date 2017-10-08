@@ -12,17 +12,16 @@ import (
 	"fmt"
 	"strconv"
 	"bytes"
-	"encoding/binary"
+	"../utils"
 )
+// load point for the program
+func main() {
 
-// program usage
-const USAGE = "This program will PadBuffer a string using the PKCS#7 scheme.\n\n" +
+	// program usage
+	const USAGE = "This program will PadBuffer a string using the PKCS#7 scheme.\n\n" +
 		"USAGE: ./challenge9 [block_size] [unpadded_string]" +
 		"\n\t[block_size]      - the size of each block in bytes" +
 		"\n\t[unpadded_string] - the string to PadBuffer to block_size"
-
-// load point for the program
-func main() {
 
 	// check argument count, if fail print USAGE
 	args := os.Args[1:]
@@ -41,30 +40,10 @@ func main() {
 	// convert string argument into a byte buffer
 	stringAsBytes := bytes.NewBufferString(args[1])
 
-	stringBuffer := PadBuffer(blockSize, stringAsBytes)
+	stringBuffer := utils.Pad(blockSize, stringAsBytes)
 
 	// printout padded string
 	fmt.Printf("%q\n", stringBuffer)
-}
-
-
-// PadBuffer pads a byte buffer using the PKCS#7 schema
-// and returns the padded buffer
-func PadBuffer(blockSize int, stringBuffer *bytes.Buffer) (*bytes.Buffer) {
-
-	// find the size of the last block and generate the PadBuffer
-	lastBlock := stringBuffer.Len() % blockSize
-	padUInt := uint16(blockSize-(lastBlock%blockSize))
-	pad := make([]byte, 2)
-	binary.BigEndian.PutUint16(pad, padUInt)
-
-	// grow the buffer and write the PadBuffer until block is full
-	stringBuffer.Grow(blockSize - lastBlock)
-	for i := 0; i < blockSize-lastBlock; i++ {
-		stringBuffer.Write(pad[1:])
-	}
-
-	return stringBuffer
 }
 
 
