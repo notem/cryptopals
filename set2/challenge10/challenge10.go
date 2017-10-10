@@ -16,16 +16,16 @@ import (
 	"bufio"
 )
 
+// program usage
+const USAGE = "This program can encrypt and decrypt a file in AES CBC mode.\n\n" +
+	"USAGE: ./challenge10 [mode] [key] [infile] [outfile]" +
+	"\n\t[mode]     - 'encrypt' or 'decrypt'" +
+	"\n\t[key]      - key stream to use" +
+	"\n\t[infile]   - input file" +
+	"\n\t[outfile]  - output file"
+
 // main loadpoint
 func main() {
-
-	// program usage
-	const USAGE = "This program can encrypt and decrypt a file in AES CBC mode.\n\n" +
-		"USAGE: ./challenge10 [mode] [key] [infile] [outfile]" +
-		"\n\t[mode]     - 'encrypt' or 'decrypt'" +
-		"\n\t[key]      - key stream to use" +
-		"\n\t[infile]   - input file" +
-		"\n\t[outfile]  - output file"
 
 	// check argument count, if fail print USAGE
 	args := os.Args[1:]

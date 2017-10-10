@@ -13,14 +13,15 @@ import (
 	"strconv"
 	"../utils"
 )
+
+// program usage
+const USAGE = "This program will PadBuffer a string using the PKCS#7 scheme.\n\n" +
+	"USAGE: ./challenge9 [block_size] [unpadded_string]" +
+	"\n\t[block_size]      - the size of each block in bytes" +
+	"\n\t[unpadded_string] - the string to PadBuffer to block_size"
+
 // load point for the program
 func main() {
-
-	// program usage
-	const USAGE = "This program will PadBuffer a string using the PKCS#7 scheme.\n\n" +
-		"USAGE: ./challenge9 [block_size] [unpadded_string]" +
-		"\n\t[block_size]      - the size of each block in bytes" +
-		"\n\t[unpadded_string] - the string to PadBuffer to block_size"
 
 	// check argument count, if fail print USAGE
 	args := os.Args[1:]
