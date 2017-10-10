@@ -1,3 +1,10 @@
+/*
+Solution to cryptopals challenge 11
+http://cryptopals.com/sets/2/challenges/11
+
+author: Nate Mathews, njm3308@rit.edu
+date: 2017-10-09
+*/
 package main
 
 import (
