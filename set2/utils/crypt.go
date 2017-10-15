@@ -17,38 +17,108 @@ func RandomByteArray(size int) ([]byte) {
 	return key
 }
 
-// encrypt byte data using a random key in either ECB or CBC mode (chosen pseudo-randomly)
-// seed rand before using this function
-func RandomEncrypt(blockSize int, data []byte) ([]byte) {
+// encrypt data under AES ECB
+func ECBEncrypt(data []byte, key []byte) ([]byte) {
 
-	mode := rand.Int()%2				// 0 is CBC, 1 is ECB
-	data = Pad(blockSize, data)	// pad the data
-	crypt := make([]byte, len(data))	// encrypted byte array storage
-
-	// create the AES cipher with a pseudo-random key
-	key := RandomByteArray(blockSize)
-	cipher, err := aes.NewCipher(key)
+	aesCipher, err := aes.NewCipher(key) // aes aesCipher
 	if err != nil {
 		panic(err)
 	}
 
-	// do encryption
-	if mode == 0 {
-		// CBC mode, encrypt the first block
-		IV := RandomByteArray(blockSize)
-		cipher.Encrypt(crypt[0:blockSize], Xor(IV, data[0:blockSize]))
+	blockSize := aesCipher.BlockSize() // block size
+	data = Pad(blockSize, data)        // pad the data
+	crypt := make([]byte, len(data))   // encrypted byte array storage
 
-		// encrypt remaining blocks
-		for i:=blockSize; i<len(data); i+=blockSize {
-			cipher.Encrypt(crypt[i:i+blockSize], Xor(crypt[i-blockSize:i], data[i:i+blockSize]))
-		}
-	} else {
-		// ECB mode, encrypt each block in data
-		for i:=0; i<len(data); i+=blockSize {
-			cipher.Encrypt(crypt[i:i+blockSize], data[i:i+blockSize])
-		}
+	// ECB mode, encrypt each block in data
+	for i:=0; i<len(data); i+=blockSize {
+		aesCipher.Encrypt(crypt[i:i+blockSize], data[i:i+blockSize])
 	}
+
+	// fully encrypted data
 	return crypt
+}
+
+// decrypt data under AES ECB
+func ECBDecrypt(crypt []byte, key []byte) ([]byte) {
+
+	aesCipher, err := aes.NewCipher(key) // aes aesCipher
+	if err != nil {
+		panic(err)
+	}
+
+	blockSize := aesCipher.BlockSize() // block size
+	data := make([]byte, len(crypt))   // data storage array
+
+	// ECB mode, decrypt each block in data
+	for i:=0; i<len(crypt); i+=blockSize {
+		aesCipher.Decrypt(data[i:i+blockSize], crypt[i:i+blockSize])
+	}
+
+	// remove pad from the decrypted data and return
+	data = UnPad(data)
+	return data
+}
+
+// encrypt data under AES CBC
+func CBCEncrypt(data []byte, key []byte, IV []byte) ([]byte) {
+
+	aesCipher, err := aes.NewCipher(key) // aes aesCipher
+	if err != nil {
+		panic(err)
+	}
+
+	blockSize := aesCipher.BlockSize() // block size
+	crypt := make([]byte, len(data))   // data storage array
+
+	// CBC mode, encrypt the first block
+	aesCipher.Encrypt(crypt[0:blockSize], Xor(IV, data[0:blockSize]))
+
+	// encrypt remaining blocks
+	for i:=blockSize; i<len(data); i+=blockSize {
+		aesCipher.Encrypt(crypt[i:i+blockSize], Xor(crypt[i-blockSize:i], data[i:i+blockSize]))
+	}
+
+	return crypt
+}
+
+// decrypt data under AES CBC
+func CBCDecrypt(crypt []byte, key []byte, IV []byte) ([]byte) {
+
+	aesCipher, err := aes.NewCipher(key) // aes aesCipher
+	if err != nil {
+		panic(err)
+	}
+
+	blockSize := aesCipher.BlockSize() // block size
+	data := make([]byte, len(crypt))   // data storage array
+
+	// CBC mode, encrypt the first block
+	aesCipher.Decrypt(data[0:blockSize], crypt[0:blockSize])
+	data = append(data[0:blockSize], Xor(IV, data[0:blockSize])...)
+
+	// encrypt remaining blocks
+	for i:=blockSize; i<len(data); i+=blockSize {
+		aesCipher.Decrypt(data[i:i+blockSize], crypt[i-blockSize:i])
+		data = append(data[i:i+blockSize], Xor(crypt[i-blockSize:i], data[i:i+blockSize])...)
+	}
+
+	// remove pad from the decrypted data and return
+	data = UnPad(data)
+	return data
+}
+
+// encrypt byte data using a random key in either ECB or CBC mode (chosen pseudo-randomly)
+// seed rand before using this function
+func RandomEncrypt(keySize int, data []byte) ([]byte) {
+
+	key := RandomByteArray(keySize)	// pseudo-random key
+
+	// do encryption
+	if rand.Int()%2 == 0 {
+		return CBCEncrypt(data, key, RandomByteArray(aes.BlockSize))
+	} else {
+		return ECBEncrypt(data, key)
+	}
 }
 
 // a function which attempts to detect if the mode used to encrypt a cipher text was ECB
