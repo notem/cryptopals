@@ -56,7 +56,7 @@ func main() {
 	crypt := utils.RandomEncrypt(16, data)
 	fmt.Printf("=> %q\n", crypt)
 
-	if utils.ECBOracle(16, crypt) {
+	if utils.DetectECB(16, crypt) {
 		fmt.Println("==> detected ECB")
 	} else {
 		fmt.Println("==> did not detect ECB")

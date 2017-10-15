@@ -51,9 +51,9 @@ func RandomEncrypt(blockSize int, data []byte) ([]byte) {
 	return crypt
 }
 
-// an oracle function which attempts to detect if the mode used to encrypt a cipher text was ECB
+// a function which attempts to detect if the mode used to encrypt a cipher text was ECB
 // responds most effectively when the underlying plaintext has repeating blocks
-func ECBOracle(blockSize int, ct []byte) (bool) {
+func DetectECB(blockSize int, ct []byte) (bool) {
 
 	topRank := 0	// rank is the highest count of repeating blocks for a tested offset
 
@@ -79,12 +79,28 @@ func ECBOracle(blockSize int, ct []byte) (bool) {
 		if rank > topRank { topRank = rank }
 	}
 
-	threshold := 0
 	// increase threshold for longer data sizes
+	threshold := 0
 	if float64(len(ct)) > math.Sqrt(math.Pow(2,float64(blockSize))) {
-		threshold = 1
+		threshold = 1 		// not a very adaptive method
 	}
 
 	// compare rank to threshold
 	return topRank > threshold
+}
+
+// determine the block size for the ECBOracle
+func DetectBlockSize(oracle func([]byte)[]byte) (uint) {
+
+	size := len(oracle(make([]byte,0)))
+	data := make([]byte,1)
+	for true {
+		dif := len(oracle(data)) - size
+		if dif > 0 {
+			return uint(dif)
+		} else {
+			data = append(data, byte(0))
+		}
+	}
+	return 0		// no valid block size found
 }
