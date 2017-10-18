@@ -1,13 +1,19 @@
+/*
+dependencies: https://github.com/cevaris/ordered_map
+ */
 package utils
 
-import "regexp"
+import (
+	"regexp"
+	"github.com/cevaris/ordered_map"
+)
 
 // de-serializes a string containing a list of k=v parameters
 // this function consumes '&' and '=' characters which do not map
 // using the regex parser
-func DeserializeParameters(parameters string) (map[string]string) {
+func DeserializeParameters(parameters string) (*ordered_map.OrderedMap) {
 
-	dict := make(map[string]string)
+	dict := ordered_map.NewOrderedMap()
 	matcher := regexp.MustCompile("(.+?)=(.+?)&|(.+?)=(.+?)$")
 
 	// fill the dictionary with k=v pairs
@@ -18,7 +24,7 @@ func DeserializeParameters(parameters string) (map[string]string) {
 			// if regex groups 1 and 2 are found
 			key := Sanitize(parameters[match[2]:match[3]])
 			value := Sanitize(parameters[match[4]:match[5]])
-			dict[key] = value	// add to dictionary
+			dict.Set(key, value)	// add to dictionary
 
 			// slice off the processed k=v pair
 			parameters = parameters[match[1]:]
@@ -26,7 +32,7 @@ func DeserializeParameters(parameters string) (map[string]string) {
 			// else regex groups 3 and 4 have been found
 			key := Sanitize(parameters[match[6]:match[7]])
 			value := Sanitize(parameters[match[8]:])
-			dict[key] = value	// add to dictionary
+			dict.Set(key, value)	// add to dictionary
 
 			// processed last k=v pair, break the loop
 			break
@@ -36,16 +42,17 @@ func DeserializeParameters(parameters string) (map[string]string) {
 }
 
 // a mapping of keys and values to a string containing a list of k=v parameters
-func SerializeParameter(dict map[string]string) (string) {
+func SerializeParameter(dict *ordered_map.OrderedMap) (string) {
 
 	parameters := ""
 	count := 0
-	for key := range dict {
+	iter := dict.IterFunc()
+	for kv, ok := iter(); ok; kv, ok = iter() {
 		// append k=v
-		parameters += key + "=" + dict[key]; count++
+		parameters += kv.Key.(string) + "=" + kv.Value.(string); count++
 
 		// if not last dictionary element, append '&'
-		if count < len(dict) {
+		if count < dict.Len() {
 			parameters += "&"
 		}
 	}
