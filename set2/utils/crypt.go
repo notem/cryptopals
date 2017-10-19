@@ -4,12 +4,12 @@ import (
 	"crypto/aes"
 	"math"
 	"math/rand"
+	"time"
 )
 
 // generates a pseudo-random byte array
-// rand should be seeded before calling this function
 func RandomByteArray(size int) ([]byte) {
-
+	rand.Seed(time.Now().UnixNano())
 	key := make([]byte, size)
 	for i:=0; i<size; i++ {
 		key[i] = byte(rand.Int())
@@ -108,9 +108,8 @@ func CBCDecrypt(crypt []byte, key []byte, IV []byte) ([]byte) {
 }
 
 // encrypt byte data using a random key in either ECB or CBC mode (chosen pseudo-randomly)
-// seed rand before using this function
 func RandomEncrypt(keySize int, data []byte) ([]byte) {
-
+	rand.Seed(time.Now().UnixNano())
 	key := RandomByteArray(keySize)	// pseudo-random key
 
 	// do encryption

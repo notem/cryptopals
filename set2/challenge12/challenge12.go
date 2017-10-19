@@ -3,7 +3,7 @@ Solution to cryptopals challenge 12
 http://cryptopals.com/sets/2/challenges/12
 
 author: Nate Mathews, njm3308@rit.edu
-date: 2017-10-14
+date: 2017-10-19
 */
 package main
 
@@ -12,7 +12,6 @@ import (
 	"../utils"
 	"encoding/base64"
 	"fmt"
-	"os"
 )
 
 // main loadpoint
@@ -20,11 +19,11 @@ func main() {
 
 	// determine block size
 	blockSize := utils.DetectBlockSize(ECBOracle)
-	fmt.Println("=>", blockSize)
+	fmt.Println("=> Blocksize is", blockSize, "bytes")
 
 	// ECB test
 	if utils.DetectECB(int(blockSize), ECBOracle(make([]byte, blockSize*3))) {
-
+		fmt.Println("==> Detected ECB")
 		// crack the ECB Oracle's secret!
 		secret := CrackSecret(blockSize)
 		fmt.Println(string(secret))
@@ -47,7 +46,6 @@ func ECBOracle(data []byte) ([]byte) {
 	data = utils.Pad(blockSize, data)	// pad the data
 	crypt := make([]byte, len(data))	// encrypted byte array storage
 
-	// create the AES cipher with a pseudo-random key
 	key := make([]byte, blockSize)
 	cipher, err := aes.NewCipher(key)
 	if err != nil {
@@ -66,15 +64,14 @@ func ECBOracle(data []byte) ([]byte) {
 func CrackSecret(blockSize uint) ([]byte) {
 
 	sizeOfSecret := len(ECBOracle(make([]byte,0)))
+	fmt.Printf("%q\n", utils.ECBDecrypt(ECBOracle(make([]byte,0)), make([]byte, blockSize)))
 	secret := make([]byte,0)
+	known := make([]byte, blockSize-1)		// known 0 byte array
 	for len(secret) < sizeOfSecret {		// while the secret is not filled
-
 		offset := uint(len(secret))			// offset to the current block
-		known := make([]byte, blockSize-1)	// known 0 byte array
 
 		// crack each byte of the current block
 		for i:=uint(0); i<blockSize; i++ {
-
 			crypt := ECBOracle(make([]byte, blockSize-1-i)) // generate the cipher text with the short block
 			block := string(crypt[offset:blockSize+offset]) // slice out the current block
 			discovered := byte(0)
@@ -85,12 +82,14 @@ func CrackSecret(blockSize uint) ([]byte) {
 				crypt = ECBOracle(append(known, byte(j)))
 
 				// compare and break if match is found
-				if string(crypt[offset:blockSize+offset]) == block {
+				if string(crypt[0:blockSize]) == block {
 					discovered = byte(j)
 					break
 				} else if j==255 {
-					fmt.Println("Something went wrong! Could not find a cipher text match!")
-					os.Exit(-1)
+					// cracking fails when the final block is reached due the block's padding
+					// after processing one byte of pad. As a solution I've decided to simply shave
+					// off the last byte and return whenever a block match is not found.
+					return secret[:len(secret)-1]
 				}
 			}
 
