@@ -15,7 +15,7 @@ import (
 
 // static variables
 var (
-	aesKey = []byte("YELLOW SUBMARINE")
+	aesKey = utils.RandomByteArray(rand.Int()%16)
 	target = []byte("This is some secret text which is greater than one block long!")
 	prefix = utils.RandomByteArray(rand.Int()%30)
 )
@@ -58,7 +58,6 @@ func CrackSecret(blockSize int) ([]byte) {
 				break
 			}
 		}
-
 		// break loop if the boundary between the prefix block and secret block was found
 		if boundary > 0 {
 			break

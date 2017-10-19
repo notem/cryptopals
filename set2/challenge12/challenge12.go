@@ -14,6 +14,11 @@ import (
 	"fmt"
 )
 
+// base 64 decoded secret text
+var secret = "Um9sbGluJyBpbiBteSA1LjAKV2l0aCBteSByYWctdG9wIGRvd24gc28gbXkgaG" +
+	"FpciBjYW4gYmxvdwpUaGUgZ2lybGllcyBvbiBzdGFuZGJ5IHdhdmluZyBqdXN0IHRvIHNhe" +
+		"SBoaQpEaWQgeW91IHN0b3A/IE5vLCBJIGp1c3QgZHJvdmUgYnkK"
+
 // main loadpoint
 func main() {
 
@@ -36,7 +41,6 @@ func main() {
 func ECBOracle(data []byte) ([]byte) {
 
 	// append the secret data to the user supplied data
-	secret := "Um9sbGluJyBpbiBteSA1LjAKV2l0aCBteSByYWctdG9wIGRvd24gc28gbXkgaGFpciBjYW4gYmxvdwpUaGUgZ2lybGllcyBvbiBzdGFuZGJ5IHdhdmluZyBqdXN0IHRvIHNheSBoaQpEaWQgeW91IHN0b3A/IE5vLCBJIGp1c3QgZHJvdmUgYnkK"
 	decoded, _ := base64.RawStdEncoding.DecodeString(secret)
 	for _, decodedByte := range decoded {
 		data = append(data, decodedByte)
@@ -64,7 +68,6 @@ func ECBOracle(data []byte) ([]byte) {
 func CrackSecret(blockSize uint) ([]byte) {
 
 	sizeOfSecret := len(ECBOracle(make([]byte,0)))
-	fmt.Printf("%q\n", utils.ECBDecrypt(ECBOracle(make([]byte,0)), make([]byte, blockSize)))
 	secret := make([]byte,0)
 	known := make([]byte, blockSize-1)		// known 0 byte array
 	for len(secret) < sizeOfSecret {		// while the secret is not filled
