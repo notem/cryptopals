@@ -15,7 +15,7 @@ import (
 
 // static variables
 var (
-	aesKey = utils.RandomByteArray(rand.Int()%16)
+	aesKey = utils.RandomByteArray(16)
 	target = []byte("This is some secret text which is greater than one block long!")
 	prefix = utils.RandomByteArray(rand.Int()%30)
 )
