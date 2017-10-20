@@ -11,10 +11,10 @@ import (
 // de-serializes a string containing a list of k=v parameters
 // this function consumes '&' and '=' characters which do not map
 // using the regex parser
-func DeserializeParameters(parameters string) (*ordered_map.OrderedMap) {
+func DeserializeParameters(parameters string, delim string) (*ordered_map.OrderedMap) {
 
 	dict := ordered_map.NewOrderedMap()
-	matcher := regexp.MustCompile("(.+?)=(.+?)&|(.+?)=(.+?)$")
+	matcher := regexp.MustCompile("(.+?)=(.+?)"+delim+"|(.+?)=(.+?)$")
 
 	// fill the dictionary with k=v pairs
 	for {	// while true loop
@@ -42,7 +42,7 @@ func DeserializeParameters(parameters string) (*ordered_map.OrderedMap) {
 }
 
 // a mapping of keys and values to a string containing a list of k=v parameters
-func SerializeParameter(dict *ordered_map.OrderedMap) (string) {
+func SerializeParameter(dict *ordered_map.OrderedMap, delim string) (string) {
 
 	parameters := ""
 	count := 0
@@ -53,13 +53,13 @@ func SerializeParameter(dict *ordered_map.OrderedMap) (string) {
 
 		// if not last dictionary element, append '&'
 		if count < dict.Len() {
-			parameters += "&"
+			parameters += delim
 		}
 	}
 	return parameters
 }
 
 // removes '&' and '=' characters from a serialized parameter string
-func Sanitize(input string) (string){
+func Sanitize(input string) (string) {
 	return regexp.MustCompile("[&=]").ReplaceAllString(input, "")
 }

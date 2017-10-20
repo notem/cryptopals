@@ -89,7 +89,7 @@ func Escalate(email string) (string) {
 	b := CreateProfile(string(tmp))	// email=nanananana | admin[pad] | &uid=10&role=use | r[pad]
 
 	// slice together desired blocks
-	crypt := append([]byte(a)[0:blockSize*2], []byte(b)[blockSize:blockSize*2]...)
+	crypt := append([]byte(a)[:blockSize*2], []byte(b)[blockSize:]...)
 	return string(crypt)
 }
 
@@ -110,7 +110,7 @@ func CreateProfile(email string) (string) {
 	dict.Set("role", "user")
 
 	// serialize the profile and encrypt it under ECB
-	serialized := utils.SerializeParameter(dict)
+	serialized := utils.SerializeParameter(dict, "&")
 	crypt := utils.ECBEncrypt([]byte(serialized), aesKey)
 	return string(crypt)
 }

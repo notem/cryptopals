@@ -55,7 +55,7 @@ func ECBDecrypt(crypt []byte, key []byte) ([]byte) {
 	}
 
 	// remove pad from the decrypted data and return
-	data = UnPad(data)
+	data, _ = UnPad(data)
 	return data
 }
 
@@ -68,6 +68,7 @@ func CBCEncrypt(data []byte, key []byte, IV []byte) ([]byte) {
 	}
 
 	blockSize := aesCipher.BlockSize() // block size
+	data = Pad(blockSize, data)        // pad the data
 	crypt := make([]byte, len(data))   // data storage array
 
 	// CBC mode, encrypt the first block
@@ -92,18 +93,21 @@ func CBCDecrypt(crypt []byte, key []byte, IV []byte) ([]byte) {
 	blockSize := aesCipher.BlockSize() // block size
 	data := make([]byte, len(crypt))   // data storage array
 
-	// CBC mode, encrypt the first block
+	// CBC mode, decrypt the first block
 	aesCipher.Decrypt(data[0:blockSize], crypt[0:blockSize])
-	data = append(data[0:blockSize], Xor(IV, data[0:blockSize])...)
+	trailingData := data[blockSize:]
+	data = append(Xor(IV, data[0:blockSize]), trailingData...)
 
-	// encrypt remaining blocks
-	for i:=blockSize; i<len(data); i+=blockSize {
-		aesCipher.Decrypt(data[i:i+blockSize], crypt[i-blockSize:i])
-		data = append(data[i:i+blockSize], Xor(crypt[i-blockSize:i], data[i:i+blockSize])...)
+	// decrypt remaining blocks
+	for i:=blockSize; i<len(crypt); i+=blockSize {
+		aesCipher.Decrypt(data[i:i+blockSize], crypt[i:i+blockSize])		// D(ct) = pt ^ ct-1
+		trailingData := data[i+blockSize:]									// pt+1...
+		xorResults := Xor(crypt[i-blockSize:i], data[i:i+blockSize])		// xor = pt ^ ct-1
+		data = append(append(data[:i], xorResults...), trailingData...)		// slice in new plaintext block
 	}
 
 	// remove pad from the decrypted data and return
-	data = UnPad(data)
+	data, _ = UnPad(data)
 	return data
 }
 

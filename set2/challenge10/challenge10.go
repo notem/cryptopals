@@ -146,7 +146,7 @@ func main() {
 
 				// remove padding if end of file as been found
 				if done {
-					outBlock = utils.UnPad(outBlock)
+					outBlock, _ = utils.UnPad(outBlock)
 				}
 
 				// write out plaintext block
