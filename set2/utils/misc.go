@@ -1,5 +1,22 @@
 package utils
 
+import (
+	"math/rand"
+	"time"
+)
+
+// generates a pseudo-random byte array
+func RandomByteArray(size int) []byte {
+
+	rand.Seed(time.Now().UnixNano()) // (un-secure) seeding
+	key := make([]byte, size)        // key array
+	for i := 0; i < size; i++ {
+		// make random bytes
+		key[i] = byte(rand.Int())
+	}
+	return key
+}
+
 // xor together two same size byte arrays
 func Xor(bytes1 []byte, bytes2 []byte) []byte {
 
@@ -16,4 +33,3 @@ func Xor(bytes1 []byte, bytes2 []byte) []byte {
 	}
 	return bytes3
 }
-
